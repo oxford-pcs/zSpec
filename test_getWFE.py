@@ -49,12 +49,7 @@ if __name__== "__main__":
 
   for w in np.arange(args.ws, args.we+args.wi, args.wi, dtype=Decimal):
     print "Processing wavelength " + str(w) + " micron ..."
-    im_xys = s.doRayTrace(fields, w)
-    plt.plot([xy[0] for xy in im_xys], [xy[1] for xy in im_xys], 'o', 
-             label=str(w))
-
-  plt.legend()
-  plt.show()
+    s.getSystemWFE()
     
   pyz.closeLink()
     

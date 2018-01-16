@@ -35,4 +35,9 @@ class Spectrograph():
                                                    reverse_fields_xy=True)
   
     return im_xys
+  
+  def getSystemWFE(self):
+    self.collimator.getWFE()
+    self.camera.getWFE()
+
     

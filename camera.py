@@ -2,11 +2,13 @@ import numpy as np
 import pylab as plt
 import pyzdde.zdde as pyz
 
-class Camera():
+from component import Component
+
+class Camera(Component):
   def __init__(self, camera_zmx_file, zcontroller):
-    self.file = camera_zmx_file
+    self.file_pathname = camera_zmx_file
     self.zcontroller = zcontroller
-    
+
   def doRayTraceForObjectAngles(self, object_angles, wavelength, reverse_fields_xy=False, verbose=True, debug=False):
     '''
       Trace the chief ray from each collimated field point through the camera 
@@ -19,7 +21,7 @@ class Camera():
     if reverse_fields_xy:
       object_angles = [(angle[1], angle[0]) for angle in object_angles]
          
-    self.zcontroller.loadZemaxFile(self.file)
+    self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
     self.zcontroller.setWavelengthValue(wavelength, 1)
 
@@ -48,8 +50,3 @@ class Camera():
 
     return xys
   
-  def getEFL(self, wavelength):
-      self.zcontroller.loadZemaxFile(self.file)
-      self.zcontroller.setWavelengthNumberOf(1)
-      self.zcontroller.setWavelengthValue(wavelength, 1)
-      return self.zcontroller.getLensData().EFL

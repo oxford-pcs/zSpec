@@ -2,11 +2,13 @@ import numpy as np
 import pylab as plt
 import pyzdde.zdde as pyz
 
-class Collimator():
+from component import Component
+
+class Collimator(Component):
   def __init__(self, collimator_zmx_file, zcontroller):
-    self.file = collimator_zmx_file
+    self.file_pathname = collimator_zmx_file
     self.zcontroller = zcontroller
-  
+
   def doRayTraceForObjectHeights(self, object_heights, wavelength, verbose=True, 
                                  debug=False):
     '''
@@ -23,7 +25,7 @@ class Collimator():
     if verbose:
       print "Tracing object heights through collimator... "
       
-    self.zcontroller.loadZemaxFile(self.file)
+    self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
     self.zcontroller.setWavelengthValue(wavelength, 1)
     
@@ -52,9 +54,3 @@ class Collimator():
       plt.show()
 
     return exit_angles
-
-  def getEFL(self, wavelength):
-    self.zcontroller.loadZemaxFile(self.file)
-    self.zcontroller.setWavelengthNumberOf(1)
-    self.zcontroller.setWavelengthValue(wavelength, 1)
-    return self.zcontroller.getLensData().EFL
