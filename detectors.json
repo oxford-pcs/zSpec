@@ -1,0 +1,15 @@
+[ 
+    {
+      "name": "apogee",
+      "detector_data": {
+        "pitch": 12
+      }
+    },
+    {
+      "name": "test",
+      "detector_data": {
+        "pitch": 480
+      }
+    }
+]
+
