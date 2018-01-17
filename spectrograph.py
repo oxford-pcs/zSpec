@@ -1,8 +1,7 @@
 import numpy as np
 import pylab as plt
 
-from collimator import Collimator
-from camera import Camera
+from component import Collimator, Camera
 from zController.Controller import Controller
 
 class Spectrograph():
@@ -11,7 +10,7 @@ class Spectrograph():
     self.camera = Camera(camera_zmx_file, zcontroller)
     self.zcontroller = zcontroller
   
-  def calculateMagnification(self, wave, verbose=True, debug=False):
+  def calculateMagnification(self, wavelength, verbose=True, debug=False):
     ''' 
       Calculate spectrograph magnification at a given wavelength where:
       
@@ -19,25 +18,29 @@ class Spectrograph():
     '''
     if verbose:
       print "Calculating spectrographic magnification at wavelength of " +\
-        str(wave) + " micron... "
+        str(wavelength) + " micron... "
     
-    return self.camera.getEFL(wave) / self.collimator.getEFL(wave) 
+    return self.camera.getEFL(wavelength) / self.collimator.getEFL(wavelength) 
 
-  def doRayTrace(self, fields, wave):
+  def doSystemRayTrace(self, object_heights, wavelength, flip_camera_OA=False):
     '''
       Trace rays through the spectrograph system at wavelength [wavelength, um] 
-      for list of xy tuples, fields [fields].
+      for list of field xy tuples [object_heights].
       
-      Returns the xy at the image plane for each field.
+      Returns the camera object angles and xy positions at the image plane for 
+      each field.
     '''
-    camera_oa = self.collimator.doRayTraceForObjectHeights(fields, wave)
-    im_xys = self.camera.doRayTraceForObjectAngles(camera_oa, wave, 
-                                                   reverse_fields_xy=True)
+    camera_OAs = self.collimator.getOA(object_heights, wavelength)
+    if flip_camera_OA:
+      camera_OAs = [(angle[1], angle[0]) for angle in camera_OAs]
+      
+    im_xys = self.camera.getImXY(camera_OAs, wavelength)
   
-    return im_xys
+    return camera_OAs, im_xys
   
-  def getSystemWFE(self):
-    self.collimator.getWFE()
-    self.camera.getWFE()
+  def getSystemWFE(self, fields, wavelength):
+    # HELP? do i need to flip pupil xy?
+    self.collimator.getWFE(fields, wavelength)
+    self.camera.getWFE(fields, wavelength)
 
     

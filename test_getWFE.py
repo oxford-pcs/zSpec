@@ -21,7 +21,7 @@ from zController.Controller import Controller
 if __name__== "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-co", help="collimator ZEMAX file", default="C:\\Users\\barnsley\\Google Drive\\Spectrograph_Optics\\collimator60.zmx")
-  parser.add_argument("-ca", help="camera ZEMAX file", default="C:\\Users\\barnsley\\Google Drive\\Spectrograph_Optics\\camera70.ZMX")  
+  parser.add_argument("-ca", help="camera ZEMAX file", default="C:\\Users\\barnsley\\Google Drive\\Spectrograph_Optics\\camera70.ZMX")    
   parser.add_argument("-ws", help="wavelength start (micron)", default="0.675", type=Decimal)
   parser.add_argument("-we", help="wavelength end (micron)", default="0.925", type=Decimal)
   parser.add_argument("-wi", help="wavelength interval (micron)", default="0.125", type=Decimal)
@@ -49,7 +49,7 @@ if __name__== "__main__":
 
   for w in np.arange(args.ws, args.we+args.wi, args.wi, dtype=Decimal):
     print "Processing wavelength " + str(w) + " micron ..."
-    s.getSystemWFE()
+    s.getSystemWFE(fields, w)
     
   pyz.closeLink()
     

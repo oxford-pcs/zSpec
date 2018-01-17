@@ -47,12 +47,14 @@ if __name__== "__main__":
   
   fields = slit_pattern.getFieldsFromSlitPattern(sampling=size_of_detector_pixel_at_slit_plane)
 
+  im_xys = []
   for w in np.arange(args.ws, args.we+args.wi, args.wi, dtype=Decimal):
     print "Processing wavelength " + str(w) + " micron ..."
-    im_xys = s.doRayTrace(fields, w)
-    plt.plot([xy[0] for xy in im_xys], [xy[1] for xy in im_xys], 'o', 
+    im_xys.append(s.doSystemRayTrace(fields, w, flip_camera_OA=True)[1])
+    
+  for im_xy in im_xys:
+    plt.plot([xy[0] for xy in im_xy], [xy[1] for xy in im_xy], 'o', 
              label=str(w))
-
   plt.legend()
   plt.show()
     
