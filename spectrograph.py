@@ -38,9 +38,17 @@ class Spectrograph():
   
     return camera_OAs, im_xys
   
-  def getSystemWFE(self, fields, wavelength):
-    # HELP? do i need to flip pupil xy?
-    self.collimator.getWFE(fields, wavelength)
-    self.camera.getWFE(fields, wavelength)
+  def getSystemWFE(self, fields, wavelength, flip_camera_OA=False):
+    '''
+      Get WFE for collimator and camera.
+      #TODO: combine?
+      #TODO: comment.
+    '''
+    wfe_data_coll, wfe_headers_coll = self.collimator.getWFE(fields, wavelength)
+    camera_OAs = self.collimator.getOA(fields, wavelength)
+    if flip_camera_OA:
+      camera_OAs = [(angle[1], angle[0]) for angle in camera_OAs]
+    
+    wfe_data_cam, wfe_headers_cam = self.camera.getWFE(camera_OAs, wavelength)
 
     

@@ -6,15 +6,15 @@ class Component():
   def __init__(self, zmx_file, zcontroller):
     pass
   
-  def _doAnalysisWFE(self, fields, wavelength, verbose=True, debug=False):
+  def _doAnalysisWFE(self, fields, field_type, wavelength, verbose=True, debug=False):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
     self.zcontroller.setWavelengthValue(wavelength, 1)
     
-    self.zcontroller.getAnalysisWFE()
+    data, headers = self.zcontroller.getAnalysisWFEForFields(fields, field_type)
     
-    exit(0)
+    return data, headers
   
   def _doRayTrace(self, fields, field_type, wavelength, verbose=True, debug=False):  
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
@@ -79,7 +79,11 @@ class Camera(Component):
     return ImXYs
  
   def getWFE(self, fields, wavelength, verbose=True, debug=False):
-    self._doAnalysisWFE(fields, wavelength, verbose=True, debug=False)
+    '''
+      Get the pupil WFE after passing through the camera.
+    '''
+    return self._doAnalysisWFE(fields, 0, wavelength, 
+                               verbose=verbose, debug=debug)
     
 class Collimator(Component):
   def __init__(self, collimator_zmx_file, zcontroller):
@@ -112,4 +116,8 @@ class Collimator(Component):
     return OAs
   
   def getWFE(self, fields, wavelength, verbose=True, debug=False):
-    self._doAnalysisWFE(fields, wavelength, verbose=verbose, debug=debug)
+    '''
+      Get the pupil WFE after passing through the collimator.
+    '''
+    return self._doAnalysisWFE(fields, 1, wavelength, 
+                               verbose=verbose, debug=debug)
