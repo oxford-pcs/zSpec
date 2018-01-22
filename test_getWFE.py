@@ -1,9 +1,6 @@
 '''
   This test program constructs an array of field points for the entrance slit 
-  corresponding to each pixel at the detector plane then calculates the WFE 
-  for each of these points.
-  
-  A fictitious detector with 480 micron pixel pitch is used to keep things fast.
+  corresponding and then then calculates the WFE for each of these points.
 '''
 
 import argparse
