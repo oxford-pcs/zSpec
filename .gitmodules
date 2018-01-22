@@ -1,3 +1,6 @@
 [submodule "zController"]
 	path = zController
 	url = https://github.com/oxford-pcs/zController.git
+[submodule "config_manager"]
+	path = config_manager
+	url = https://github.com/oxford-pcs/config_manager.git

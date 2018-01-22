@@ -11,8 +11,8 @@ import pylab as plt
 import pyzdde.zdde as pyz    
 
 from spectrograph import Spectrograph
-from slit import slit
-from detector import detector 
+from config_manager.slit import slit
+from config_manager.detector import detector 
 from zController.Controller import Controller
 
 if __name__== "__main__":
@@ -24,7 +24,7 @@ if __name__== "__main__":
   parser.add_argument("-wi", help="wavelength interval (micron)", default="0.125", type=Decimal)
   parser.add_argument("-s", help="slit name (brick_wall pattern only)", default="SWIFT")
   parser.add_argument("-nf", help="number of fields to be considered per slitlet", default=1, type=int)
-  parser.add_argument("-sf", help="slits file", default="slits.json")
+  parser.add_argument("-sf", help="slits file", default="config_manager\\slits.json")
   args = parser.parse_args()
   
   zmx_link = pyz.createLink()
