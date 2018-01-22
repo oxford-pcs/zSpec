@@ -41,7 +41,6 @@ class Spectrograph():
   def getSystemWFE(self, fields, wavelength, flip_camera_OA=False):
     '''
       Get WFE for collimator and camera.
-      #TODO: combine?
       #TODO: comment.
     '''
     wfe_data_coll, wfe_headers_coll = self.collimator.getWFE(fields, wavelength)
@@ -50,5 +49,7 @@ class Spectrograph():
       camera_OAs = [(angle[1], angle[0]) for angle in camera_OAs]
     
     wfe_data_cam, wfe_headers_cam = self.camera.getWFE(camera_OAs, wavelength)
+    
+    #TODO: combine?
 
     

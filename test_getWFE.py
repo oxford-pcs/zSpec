@@ -25,10 +25,9 @@ if __name__== "__main__":
   parser.add_argument("-ws", help="wavelength start (micron)", default="0.675", type=Decimal)
   parser.add_argument("-we", help="wavelength end (micron)", default="0.925", type=Decimal)
   parser.add_argument("-wi", help="wavelength interval (micron)", default="0.125", type=Decimal)
-  parser.add_argument("-s", help="slit name", default="SWIFT")
-  parser.add_argument("-d", help="detector name", default="test")
+  parser.add_argument("-s", help="slit name (brick_wall pattern only)", default="SWIFT")
+  parser.add_argument("-nf", help="number of fields to be considered per slitlet", default=1, type=int)
   parser.add_argument("-sf", help="slits file", default="slits.json")
-  parser.add_argument("-df", help="detectors file", default="detectors.json")
   args = parser.parse_args()
   
   zmx_link = pyz.createLink()
@@ -37,19 +36,13 @@ if __name__== "__main__":
   s = Spectrograph(args.co, args.ca, zcontroller)
   
   slit_pattern = slit(args.sf, args.s)
-  detector = detector(args.df, args.d)
+  pattern_data = slit_pattern.cfg['pattern_data']
   
-  wave_c = args.ws + ((args.we - args.ws) / Decimal(2.))
-
-  M = s.calculateMagnification(wave_c)
-  detector_pixel_pitch = detector.cfg['detector_data']['pitch'] / 1000. # mm
-  size_of_detector_pixel_at_slit_plane = detector_pixel_pitch / M
-  
-  fields = slit_pattern.getFieldsFromSlitPattern(sampling=size_of_detector_pixel_at_slit_plane)
+  fields = slit_pattern.getFieldsFromSlitPattern(nfields=pattern_data['n_slitlets']*args.nf)
 
   for w in np.arange(args.ws, args.we+args.wi, args.wi, dtype=Decimal):
     print "Processing wavelength " + str(w) + " micron ..."
-    s.getSystemWFE(fields, w)
+    wfe_data_coll, wfe_headers_coll = s.collimator.getWFE(fields, w)
     
   pyz.closeLink()
     

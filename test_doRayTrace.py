@@ -1,9 +1,6 @@
 '''
   This test program constructs an array of field points for the entrance slit 
-  corresponding to each pixel at the detector plane then raytraces the 
-  system for each of these points.
-  
-  A fictitious detector with 480 micron pixel pitch is used to keep things fast.
+  corresponding and then raytraces the system for each of these points.
 '''
 
 import argparse
@@ -25,10 +22,9 @@ if __name__== "__main__":
   parser.add_argument("-ws", help="wavelength start (micron)", default="0.675", type=Decimal)
   parser.add_argument("-we", help="wavelength end (micron)", default="0.925", type=Decimal)
   parser.add_argument("-wi", help="wavelength interval (micron)", default="0.125", type=Decimal)
-  parser.add_argument("-s", help="slit name", default="SWIFT")
-  parser.add_argument("-d", help="detector name", default="test")
+  parser.add_argument("-s", help="slit name (brick_wall pattern only)", default="SWIFT")
+  parser.add_argument("-nf", help="number of fields to be considered per slitlet", default=1, type=int)
   parser.add_argument("-sf", help="slits file", default="slits.json")
-  parser.add_argument("-df", help="detectors file", default="detectors.json")
   args = parser.parse_args()
   
   zmx_link = pyz.createLink()
@@ -37,22 +33,18 @@ if __name__== "__main__":
   s = Spectrograph(args.co, args.ca, zcontroller)
   
   slit_pattern = slit(args.sf, args.s)
-  detector = detector(args.df, args.d)
+  pattern_data = slit_pattern.cfg['pattern_data']
   
-  wave_c = args.ws + ((args.we - args.ws) / Decimal(2.))
-
-  M = s.calculateMagnification(wave_c)
-  detector_pixel_pitch = detector.cfg['detector_data']['pitch'] / 1000. # mm
-  size_of_detector_pixel_at_slit_plane = detector_pixel_pitch / M
-  
-  fields = slit_pattern.getFieldsFromSlitPattern(sampling=size_of_detector_pixel_at_slit_plane)
+  fields = slit_pattern.getFieldsFromSlitPattern(nfields=pattern_data['n_slitlets']*args.nf)
 
   im_xys = []
+  W = []
   for w in np.arange(args.ws, args.we+args.wi, args.wi, dtype=Decimal):
     print "Processing wavelength " + str(w) + " micron ..."
     im_xys.append(s.doSystemRayTrace(fields, w, flip_camera_OA=True)[1])
+    W.append(w)
     
-  for im_xy in im_xys:
+  for w, im_xy in zip(W, im_xys):
     plt.plot([xy[0] for xy in im_xy], [xy[1] for xy in im_xy], 'o', 
              label=str(w))
   plt.legend()
