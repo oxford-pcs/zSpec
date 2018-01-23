@@ -2,10 +2,19 @@ import numpy as np
 import pylab as plt
 import pyzdde.zdde as pyz
 
-class Component():
-  def __init__(self, zmx_file, zcontroller):
-    pass
-  
+class Component(object):
+  def __init__(self, zmx_file, zcontroller, lumultiplier):
+    '''
+      Initialise a component.
+
+      [lumultiplier] is used to move from Zemax lens units to another
+      physical dimension. By default, Zemax does its calculations in
+      mm, so a lumultiplier of 1e3 moves this to m.
+    '''
+    self.file_pathname = zmx_file
+    self.zcontroller = zcontroller
+    self.lumultiplier = lumultiplier
+
   def _doAnalysisWFE(self, fields, field_type, wavelength, verbose=True, debug=False):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
@@ -24,25 +33,36 @@ class Component():
     
     rays = self.zcontroller.doRayTraceForFields(fields, field_type=field_type, 
                                                 px=0, py=0)
-    
+    tmp = []
+    for ray in rays:
+      tmp.append({
+        'x': ray.x * self.lumultiplier,
+        'y': ray.y * self.lumultiplier,
+        'z': ray.z * self.lumultiplier,
+        'dcos_l': ray.dcos_l,
+        'dcos_m': ray.dcos_m,
+        'dcos_n': ray.dcos_n
+        })
+    rays = tmp
+
     if debug:
       for idx, ray in enumerate(rays):
         if idx == 0:
           print
           print "field\tx\ty\tz"
-        print idx, '\t', round(ray.x, 2), '\t', round(ray.y, 2), '\t', \
-          round(ray.z, 2)
+        print idx, '\t', round(ray['x'], 2), '\t', round(ray['y'], 2), \
+              '\t', round(ray['z'], 2)
         if idx == len(rays):
           print
           
       plt.plot()
       for field, ray in zip(fields, rays):
-        plt.plot(ray.x, ray.y, 'o', label=str('[' + str(field[0]) + 
-                                                ', ' + str(field[1]) + 
-                                                ']'))
+        plt.plot(rays['x'], ray['y'], 'o', label=str('[' + str(field[0]) + 
+                                      ', ' + str(field[1]) + 
+                                      ']'))
       plt.legend(loc='upper right', numpoints=1)
       plt.show()    
-      
+
     return rays
     
   def getEFL(self, wavelength, verbose=False):
@@ -53,12 +73,12 @@ class Component():
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
     self.zcontroller.setWavelengthValue(wavelength, 1)
-    return self.zcontroller.getLensData().EFL
+    return self.zcontroller.getLensData().EFL*self.lumultiplier
 
 class Camera(Component):
-  def __init__(self, camera_zmx_file, zcontroller):
-    self.file_pathname = camera_zmx_file
-    self.zcontroller = zcontroller
+  def __init__(self, camera_zmx_file, zcontroller, lumultiplier=1e-3):
+    super(Camera, self).__init__(camera_zmx_file, zcontroller, lumultiplier)
+    pass
 
   def getImXY(self, fields, wavelength, verbose=True, debug=False):
     '''
@@ -74,7 +94,7 @@ class Camera(Component):
     
     ImXYs = []
     for ray in rays:
-      ImXYs.append((ray.x, ray.y))
+      ImXYs.append((ray['x'], ray['y']))
 
     return ImXYs
  
@@ -86,10 +106,11 @@ class Camera(Component):
                                verbose=verbose, debug=debug)
     
 class Collimator(Component):
-  def __init__(self, collimator_zmx_file, zcontroller):
-    self.file_pathname = collimator_zmx_file
-    self.zcontroller = zcontroller
-
+  def __init__(self, collimator_zmx_file, zcontroller, lumultiplier=1e-3):
+    super(Collimator, self).__init__(collimator_zmx_file, zcontroller,
+                                     lumultiplier)
+    pass
+  
   def getOA(self, fields, wavelength, verbose=True, debug=False):
     '''
       Trace the chief ray for each field point in the slit through the 
@@ -110,8 +131,8 @@ class Collimator(Component):
     
     OAs = []
     for ray in rays:
-      OAs.append((np.degrees(np.arctan(ray.dcos_l/ray.dcos_n)), 
-                             np.degrees(np.arctan(ray.dcos_m/ray.dcos_n))))
+      OAs.append((np.degrees(np.arctan(ray['dcos_l']/ray['dcos_n'])), 
+                             np.degrees(np.arctan(ray['dcos_m']/ray['dcos_n']))))
       
     return OAs
   
