@@ -4,6 +4,7 @@ Programmatically assemble a spectrograph from Zemax files using PyZDDE.
 # Dependencies
 - PyZDDE
 - zController
+- spectrograph_config_manager
 
 # Overview
 The classes contain herein allow the user to assemble a spectrograph from Zemax optical designs for the collimator and camera.
