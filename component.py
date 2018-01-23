@@ -75,6 +75,16 @@ class Component(object):
     self.zcontroller.setWavelengthValue(wavelength, 1)
     return self.zcontroller.getLensData().EFL*self.lumultiplier
 
+  def getWFNO(self, wavelength, verbose=False):
+    if verbose:
+      print "Getting WFNO for component... "
+      
+    if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
+      self.zcontroller.loadZemaxFile(self.file_pathname)
+    self.zcontroller.setWavelengthNumberOf(1)
+    self.zcontroller.setWavelengthValue(wavelength, 1)
+    return self.zcontroller.getLensData().realWorkFNum
+
 class Camera(Component):
   def __init__(self, camera_zmx_file, zcontroller, lumultiplier=1e-3):
     super(Camera, self).__init__(camera_zmx_file, zcontroller, lumultiplier)
