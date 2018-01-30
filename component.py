@@ -9,23 +9,26 @@ class Component(object):
 
       [lumultiplier] is used to move from Zemax lens units to another
       physical dimension. By default, Zemax does its calculations in
-      mm, so a lumultiplier of 1e3 moves this to m.
+      mm, so a [lumultiplier] of 1e3 moves this to m.
     '''
     self.file_pathname = zmx_file
     self.zcontroller = zcontroller
     self.lumultiplier = lumultiplier
 
-  def _doAnalysisWFE(self, fields, field_type, wavelength, verbose=True, debug=False):
+  def _doAnalysisWFE(self, fields, field_type, wavelength, sampling, 
+                     verbose=True, debug=False):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
     self.zcontroller.setWavelengthValue(wavelength, 1)
     
-    data, headers = self.zcontroller.getAnalysisWFEForFields(fields, field_type)
+    data, headers = self.zcontroller.getAnalysisWFEForFields(fields, field_type,
+                                                             sampling=sampling)
     
     return data, headers
   
-  def _doRayTrace(self, fields, field_type, wavelength, verbose=True, debug=False):  
+  def _doRayTrace(self, fields, field_type, wavelength, verbose=True, 
+                  debug=False):  
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
@@ -74,6 +77,16 @@ class Component(object):
     self.zcontroller.setWavelengthNumberOf(1)
     self.zcontroller.setWavelengthValue(wavelength, 1)
     return self.zcontroller.getLensData().EFL*self.lumultiplier
+  
+  def getENPD(self, wavelength, verbose=False):
+    if verbose:
+      print "Getting ENPD for component... "
+      
+    if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
+      self.zcontroller.loadZemaxFile(self.file_pathname)
+    self.zcontroller.setWavelengthNumberOf(1)
+    self.zcontroller.setWavelengthValue(wavelength, 1)
+    return self.zcontroller.getPupilData().ENPD*self.lumultiplier
 
   def getWFNO(self, wavelength, verbose=False):
     if verbose:
@@ -108,11 +121,11 @@ class Camera(Component):
 
     return ImXYs
  
-  def getWFE(self, fields, wavelength, verbose=True, debug=False):
+  def getWFE(self, fields, wavelength, sampling, verbose=True, debug=False):
     '''
       Get the pupil WFE after passing through the camera.
     '''
-    return self._doAnalysisWFE(fields, 0, wavelength, 
+    return self._doAnalysisWFE(fields, 0, wavelength, sampling=sampling,
                                verbose=verbose, debug=debug)
     
 class Collimator(Component):
@@ -146,9 +159,9 @@ class Collimator(Component):
       
     return OAs
   
-  def getWFE(self, fields, wavelength, verbose=True, debug=False):
+  def getWFE(self, fields, wavelength, sampling, verbose=True, debug=False):
     '''
       Get the pupil WFE after passing through the collimator.
     '''
-    return self._doAnalysisWFE(fields, 1, wavelength, 
+    return self._doAnalysisWFE(fields, 1, wavelength, sampling=sampling, 
                                verbose=verbose, debug=debug)
