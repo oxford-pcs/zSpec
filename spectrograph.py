@@ -1,15 +1,21 @@
 import numpy as np
 import pylab as plt
+import pyzdde.zdde as pyz    
 
 from component import *
 from zController.Controller import Controller
 
 class Spectrograph():
-  def __init__(self, collimator_zmx_file, camera_zmx_file, zcontroller):
-    self.collimator = Collimator(collimator_zmx_file, zcontroller)
-    self.camera = Camera(camera_zmx_file, zcontroller)
-    self.zcontroller = zcontroller
-  
+  def __init__(self, collimator_zmx_file, camera_zmx_file):
+    self.zmx_link = pyz.createLink()
+    self.zcontroller = Controller(self.zmx_link)
+
+    self.collimator = Collimator(collimator_zmx_file, self.zcontroller)
+    self.camera = Camera(camera_zmx_file, self.zcontroller)
+
+  def __del__(self):   
+    self.zmx_link.close()
+
   def calculateMagnification(self, wavelength, verbose=True, debug=False):
     ''' 
       Calculate spectrograph magnification at a given wavelength where:
