@@ -1,15 +1,16 @@
 # zSpec
 Programmatically assemble a spectrograph from Zemax files using PyZDDE.
 
-# Dependencies
+## Dependencies
+- Zemax
 - PyZDDE
 - zController
-- spectrograph_config_manager
 
-# Overview
-The classes contain herein allow the user to assemble a spectrograph from Zemax optical designs for the collimator and camera.
+## Overview
+This package allows the user to assemble a spectrograph from separate optical design files (Zemax) for the collimator and camera by instantiating the Spectrograph() class. 
 
-Once assembled, the system can be fully raytraced for any field(s) from the entrance slit to the image plane. 
-# Usage
+## Current Capabilities
+- calculateMagnification() - calculate magnification of system
+- doSystemRayTrace() - perform raytrace through system
+- getSystemWFE() - get the total system WFE
 
-Example usages are shown in the test scripts `test_doRayTrace.py` and `test_getWFE.py`.

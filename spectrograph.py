@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as plt
 
-from component import Collimator, Camera
+from component import *
 from zController.Controller import Controller
 
 class Spectrograph():
@@ -33,18 +33,18 @@ class Spectrograph():
     camera_OAs = self.collimator.getOA(object_heights, wavelength)
     if flip_camera_OA:
       camera_OAs = [(angle[1], angle[0]) for angle in camera_OAs]
-      
+
     im_xys = self.camera.getImXY(camera_OAs, wavelength)
   
     return camera_OAs, im_xys
   
-  def getSystemWFE(self, fields, wavelength, flip_camera_OA=False):
+  def getSystemWFE(self, object_heights, wavelength, flip_camera_OA=False):
     '''
       Get WFE for collimator and camera.
       #TODO: comment.
     '''
-    wfe_data_coll, wfe_headers_coll = self.collimator.getWFE(fields, wavelength)
-    camera_OAs = self.collimator.getOA(fields, wavelength)
+    wfe_data_coll, wfe_headers_coll = self.collimator.getWFE(object_heights, wavelength)
+    camera_OAs = self.collimator.getOA(object_heights, wavelength)
     if flip_camera_OA:
       camera_OAs = [(angle[1], angle[0]) for angle in camera_OAs]
     

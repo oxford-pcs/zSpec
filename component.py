@@ -3,24 +3,29 @@ import pylab as plt
 import pyzdde.zdde as pyz
 
 class Component(object):
-  def __init__(self, zmx_file, zcontroller, lumultiplier):
+  def __init__(self, zmx_file, zcontroller, lumultiplier=1e-3, wumultiplier=1e6):
     '''
       Initialise a component.
 
       [lumultiplier] is used to move from Zemax lens units to another
       physical dimension. By default, Zemax does its calculations in
-      mm, so a [lumultiplier] of 1e3 moves this to m.
+      mm, so a [lumultiplier] of 1e-3 moves from mm to m.
+
+      [wumultiplier] is used to move from SI units to Zemax wavelength
+      units. By default, Zemax does its calculations in
+      micron, so a [wumultiplier] of 1e6 moves from m to micron.
     '''
     self.file_pathname = zmx_file
     self.zcontroller = zcontroller
     self.lumultiplier = lumultiplier
+    self.wumultiplier = wumultiplier
 
   def _doAnalysisWFE(self, fields, field_type, wavelength, sampling, 
                      verbose=True, debug=False):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
-    self.zcontroller.setWavelengthValue(wavelength, 1)
+    self.zcontroller.setWavelengthValue(float(wavelength)*self.wumultiplier, 1)
     
     data, headers = self.zcontroller.getAnalysisWFEForFields(fields, field_type,
                                                              sampling=sampling)
@@ -32,7 +37,7 @@ class Component(object):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
-    self.zcontroller.setWavelengthValue(wavelength, 1)
+    self.zcontroller.setWavelengthValue(float(wavelength)*self.wumultiplier, 1)
     
     rays = self.zcontroller.doRayTraceForFields(fields, field_type=field_type, 
                                                 px=0, py=0)
@@ -75,7 +80,7 @@ class Component(object):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
-    self.zcontroller.setWavelengthValue(wavelength, 1)
+    self.zcontroller.setWavelengthValue(float(wavelength)*self.wumultiplier, 1)
     return self.zcontroller.getLensData().EFL*self.lumultiplier
   
   def getENPD(self, wavelength, verbose=False):
@@ -85,8 +90,18 @@ class Component(object):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
-    self.zcontroller.setWavelengthValue(wavelength, 1)
+    self.zcontroller.setWavelengthValue(float(wavelength)*self.wumultiplier, 1)
     return self.zcontroller.getPupilData().ENPD*self.lumultiplier
+
+  def getEXPD(self, wavelength, verbose=False):
+    if verbose:
+      print "Getting EXPD for component... "
+      
+    if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
+      self.zcontroller.loadZemaxFile(self.file_pathname)
+    self.zcontroller.setWavelengthNumberOf(1)
+    self.zcontroller.setWavelengthValue(float(wavelength)*self.wumultiplier, 1)
+    return self.zcontroller.getPupilData().EXPD*self.lumultiplier    
 
   def getWFNO(self, wavelength, verbose=False):
     if verbose:
@@ -95,12 +110,14 @@ class Component(object):
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
     self.zcontroller.setWavelengthNumberOf(1)
-    self.zcontroller.setWavelengthValue(wavelength, 1)
+    self.zcontroller.setWavelengthValue(float(wavelength)*self.wumultiplier, 1)
     return self.zcontroller.getLensData().realWorkFNum
 
 class Camera(Component):
-  def __init__(self, camera_zmx_file, zcontroller, lumultiplier=1e-3):
-    super(Camera, self).__init__(camera_zmx_file, zcontroller, lumultiplier)
+  def __init__(self, camera_zmx_file, zcontroller, lumultiplier=1e-3, 
+    wumultiplier=1e6):
+    super(Camera, self).__init__(camera_zmx_file, zcontroller, lumultiplier,
+      wumultiplier)
     pass
 
   def getImXY(self, fields, wavelength, verbose=True, debug=False):
@@ -114,7 +131,6 @@ class Camera(Component):
       
     rays = self._doRayTrace(fields, 0, wavelength, verbose=verbose, 
                             debug=debug)
-    
     ImXYs = []
     for ray in rays:
       ImXYs.append((ray['x'], ray['y']))
@@ -129,9 +145,10 @@ class Camera(Component):
                                verbose=verbose, debug=debug)
     
 class Collimator(Component):
-  def __init__(self, collimator_zmx_file, zcontroller, lumultiplier=1e-3):
+  def __init__(self, collimator_zmx_file, zcontroller, lumultiplier=1e-3,
+    wumultiplier=1e6):
     super(Collimator, self).__init__(collimator_zmx_file, zcontroller,
-                                     lumultiplier)
+                                     lumultiplier, wumultiplier)
     pass
   
   def getOA(self, fields, wavelength, verbose=True, debug=False):
@@ -154,6 +171,7 @@ class Collimator(Component):
     
     OAs = []
     for ray in rays:
+      #print ray['dcos_l'], ray['dcos_m'], ray['dcos_n']
       OAs.append((np.degrees(np.arctan(ray['dcos_l']/ray['dcos_n'])), 
                              np.degrees(np.arctan(ray['dcos_m']/ray['dcos_n']))))
       
