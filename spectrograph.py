@@ -5,7 +5,7 @@ import pyzdde.zdde as pyz
 from component import *
 from zController.Controller import Controller
 
-class Spectrograph():
+class zSpectrograph():
   def __init__(self, collimator_zmx_file, camera_zmx_file):
     self.zmx_link = pyz.createLink()
     self.zcontroller = Controller(self.zmx_link)
@@ -43,19 +43,21 @@ class Spectrograph():
     im_xys = self.camera.getImXY(camera_OAs, wavelength)
   
     return camera_OAs, im_xys
-  
-  def getSystemWFE(self, object_heights, wavelength, flip_camera_OA=False):
+
+  def getSystemAttr(self, wavelength):
     '''
-      Get WFE for collimator and camera.
-      #TODO: comment.
+      Get some key attributes of the spectrograph system.
     '''
-    wfe_data_coll, wfe_headers_coll = self.collimator.getWFE(object_heights, wavelength)
-    camera_OAs = self.collimator.getOA(object_heights, wavelength)
-    if flip_camera_OA:
-      camera_OAs = [(angle[1], angle[0]) for angle in camera_OAs]
-    
-    wfe_data_cam, wfe_headers_cam = self.camera.getWFE(camera_OAs, wavelength)
-    
-    #TODO: combine?
+    attr = {
+      "camera_EFFL": self.camera.getEFFL(wavelength),
+      "camera_ENPD": self.camera.getENPD(wavelength),
+      "camera_EXPD": self.camera.getEXPD(wavelength),
+      "camera_WFNO": self.camera.getWFNO(wavelength),
+      "collimator_EFFL": self.collimator.getEFFL(wavelength),
+      "collimator_ENPD": self.collimator.getENPD(wavelength),
+      "collimator_EXPD": self.collimator.getEXPD(wavelength),
+      "collimator_WFNO": self.collimator.getWFNO(wavelength),
+    }
+    return attr
 
     

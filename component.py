@@ -73,9 +73,9 @@ class Component(object):
 
     return rays
     
-  def getEFL(self, wavelength, verbose=False):
+  def getEFFL(self, wavelength, verbose=False):
     if verbose:
-      print "Getting EFL for component... "
+      print "Getting EFFL for component... "
       
     if not self.zcontroller.isFileAlreadyLoaded(self.file_pathname):
       self.zcontroller.loadZemaxFile(self.file_pathname)
